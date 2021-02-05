@@ -12,6 +12,8 @@ class DmozItem(scrapy.Item):
 	Company_size = scrapy.Field()
 	Job_function = scrapy.Field()
 	Img_Url = scrapy.Field()
+	apply_link = scrapy.Field()
+	Description = scrapy.Field()
 
 
 class DmozSpider(scrapy.Spider):
@@ -21,34 +23,72 @@ class DmozSpider(scrapy.Spider):
     'https://www.glassdoor.com/Job/bismarck-jobs-SRCH_IL.0,8_IC1156224.htm'
     ]
 	BASE_URL = 'https://www.glassdoor.com'
+	
 
 	def parse(self, response):
+		i = 1
+		pg_links = []
 		links = response.css('a.jobLink').xpath("@href").extract()
 		for link in links:
 			absolute_url = self.BASE_URL + link
 			yield scrapy.Request(absolute_url,callback=self.parse_attr)
-		next_page = self.BASE_URL + response.css('li.css-1yshuyv a').xpath("@href").extract()
-		print("next_page")
-		if next_page:
-				yield Scarpy.Request(next_page,callback=self.parse_attr)
-		else:
-			print("Finish")
+		# next_ =  response.css('li.css-1yshuyv a').xpath("@href").extract()
+		# next_page = self.BASE_URL + next_[0]
+		# a = response.css('div.tbl div.cell::text').extract()
+		# page_n = a[0].split(" of ")
+		# print("Hello"+str(page_n[1]))
+		# i = i + 1
+		# for i in range(int(page_n[1])+1):
+		# 	print("Hello"+str(i))
+		# 	pg_links.append("https://www.glassdoor.com/Job/bismarck-jobs-SRCH_IL.0,8_IC1156224_IP"+str(i)+".htm")
+		# print(pg_links)
+		# if i <= int(page_n[1]):
+		# 	page_start = "https://www.glassdoor.com/Job/bismarck-jobs-SRCH_IL.0,8_IC1156224_IP"+str(i)+".htm"
+		# 	print("Hello"+str(i))
+		# 	yield scrapy.Request(page_start,callback=self.parse)
+		
+
+
 	def parse_attr(self, response):
+		headers = {'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_11_5) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/50.0.2661.102 Safari/537.36'}
 		item = DmozItem()
 		title = response.css('div.css-17x2pwl::text').extract()
 		company_name = response.css('div.css-16nw49e::text').extract()
 		location = response.css('div.css-1v5elnn::text').extract()
 		salary = response.css('span.small::text').extract()
 		data = response.css('span.css-sr4ps0::text').extract()
-		job_type = data[0]
-		industry = data[1]
-		company_size = data[2]
+		try:
+			job_type = data[0]
+		except IndexError:
+			job_type = ""
+		try:
+			industry = data[1]
+		except IndexError:
+			industry = ""
+		try:
+			company_size = data[2]
+		except IndexError:
+			company_size = ""
 		job_function = response.css('span.css-o4d739::text').extract()
 		data_img = response.css('img.lazy').xpath("@data-original").extract()
+		apply_link = response.css('a.gd-ui-button').xpath("@href").extract()
+		data = response.css('p::text').extract()
+
+		try:
+			apply_linkss  = 'https://www.glassdoor.com' + apply_link[0]
+			r = requests.get(apply_linkss,headers=headers)
+			apply_links = r.url
+		except IndexError:
+			apply_links = response.css('button.applyButton span::text').extract()
+			apply_links = response.url
 		try:
 			img = data_img[1]
 		except IndexError:
 			img =""
+		data_desc = ""
+		for i in data:
+			data_desc = data_desc + i +" "
+
 		item['Title'] = title
 		item['Company_name'] = company_name
 		item['Location'] = location
@@ -58,6 +98,8 @@ class DmozSpider(scrapy.Spider):
 		item['Company_size'] = company_size
 		item['Job_function'] = job_function
 		item['Img_Url'] = img
+		item['apply_link'] = apply_links
+		item['Description'] = data_desc
 		return item
         
 		

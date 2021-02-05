@@ -18,7 +18,8 @@ NEWSPIDER_MODULE = 'glassdoor.spiders'
 
 # Obey robots.txt rules
 ROBOTSTXT_OBEY = False
-
+handle_httpstatus_list = [301]
+DUPEFILTER_CLASS = 'scrapy.dupefilters.BaseDupeFilter'
 # Configure maximum concurrent requests performed by Scrapy (default: 16)
 #CONCURRENT_REQUESTS = 32
 
