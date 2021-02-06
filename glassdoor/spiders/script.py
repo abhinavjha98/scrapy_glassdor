@@ -54,22 +54,32 @@ class DmozSpider(scrapy.Spider):
 		item = DmozItem()
 		title = response.css('div.css-17x2pwl::text').extract()
 		company_name = response.css('div.css-16nw49e::text').extract()
+		if company_name == "N/A":
+			company_name = ""
 		location = response.css('div.css-1v5elnn::text').extract()
 		salary = response.css('span.small::text').extract()
 		data = response.css('span.css-sr4ps0::text').extract()
 		try:
 			job_type = data[0]
+			if job_type == "N/A":
+				job_type = ""
 		except IndexError:
 			job_type = ""
 		try:
 			industry = data[1]
+			if industry == "N/A":
+				industry = ""
 		except IndexError:
 			industry = ""
 		try:
 			company_size = data[2]
+			if company_size == "N/A":
+				company_sizem = ""
 		except IndexError:
 			company_size = ""
 		job_function = response.css('span.css-o4d739::text').extract()
+		if job_function == "N/A":
+			job_function = ""
 		data_img = response.css('img.lazy').xpath("@data-original").extract()
 		apply_link = response.css('a.gd-ui-button').xpath("@href").extract()
 		data = response.css('p::text').extract()
