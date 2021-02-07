@@ -34,18 +34,18 @@ class DmozSpider(scrapy.Spider):
 			yield scrapy.Request(absolute_url,callback=self.parse_attr)
 		# next_ =  response.css('li.css-1yshuyv a').xpath("@href").extract()
 		# next_page = self.BASE_URL + next_[0]
-		# a = response.css('div.tbl div.cell::text').extract()
-		# page_n = a[0].split(" of ")
-		# print("Hello"+str(page_n[1]))
-		# i = i + 1
+		a = response.css('div.tbl div.cell::text').extract()
+		page_n = a[0].split(" of ")
+		print("Hello"+str(page_n[1]))
+		i = i + 1
 		# for i in range(int(page_n[1])+1):
 		# 	print("Hello"+str(i))
 		# 	pg_links.append("https://www.glassdoor.com/Job/bismarck-jobs-SRCH_IL.0,8_IC1156224_IP"+str(i)+".htm")
 		# print(pg_links)
-		# if i <= int(page_n[1]):
-		# 	page_start = "https://www.glassdoor.com/Job/bismarck-jobs-SRCH_IL.0,8_IC1156224_IP"+str(i)+".htm"
-		# 	print("Hello"+str(i))
-		# 	yield scrapy.Request(page_start,callback=self.parse)
+		if i <= int(page_n[1]):
+			page_start = "https://www.glassdoor.com/Job/bismarck-jobs-SRCH_IL.0,8_IC1156224_IP"+str(i)+".htm"
+			print("Hello"+str(i))
+			yield scrapy.Request(page_start,callback=self.parse)
 		
 
 
@@ -54,8 +54,12 @@ class DmozSpider(scrapy.Spider):
 		item = DmozItem()
 		title = response.css('div.css-17x2pwl::text').extract()
 		company_name = response.css('div.css-16nw49e::text').extract()
-		if company_name == "N/A":
-			company_name = ""
+		
+		try:	
+			if company_name[0] == "N/A":
+				company_name[0] = ""
+		except IndexError:
+			company_name = []
 		location = response.css('div.css-1v5elnn::text').extract()
 		salary = response.css('span.small::text').extract()
 		data = response.css('span.css-sr4ps0::text').extract()
