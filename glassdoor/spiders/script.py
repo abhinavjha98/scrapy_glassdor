@@ -1,7 +1,7 @@
 import scrapy
 import urllib
 import requests
-
+from urllib.request import Request, urlopen
 class DmozItem(scrapy.Item):
 	Title = scrapy.Field()
 	Company_name = scrapy.Field()
@@ -31,7 +31,7 @@ class DmozSpider(scrapy.Spider):
 		links = response.css('a.jobLink').xpath("@href").extract()
 		for link in links:
 			absolute_url = self.BASE_URL + link
-			yield scrapy.Request(absolute_url,callback=self.parse_attr)
+			yield scrapy.Request(absolute_url,callback=self.parse_attr,dont_filter=True)
 		# next_ =  response.css('li.css-1yshuyv a').xpath("@href").extract()
 		# next_page = self.BASE_URL + next_[0]
 		a = response.css('div.tbl div.cell::text').extract()
@@ -45,7 +45,7 @@ class DmozSpider(scrapy.Spider):
 		if i <= int(page_n[1]):
 			page_start = "https://www.glassdoor.com/Job/bismarck-jobs-SRCH_IL.0,8_IC1156224_IP"+str(i)+".htm"
 			print("Hello"+str(i))
-			yield scrapy.Request(page_start,callback=self.parse)
+			yield scrapy.Request(page_start,callback=self.parse, dont_filter=True)
 		
 
 
@@ -85,13 +85,14 @@ class DmozSpider(scrapy.Spider):
 		if job_function == "N/A":
 			job_function = ""
 		data_img = response.css('img.lazy').xpath("@data-original").extract()
-		apply_link = response.css('a.gd-ui-button').xpath("@href").extract()
+		apply_link = response.css('a.gd-ui-button').xpath("@href").extract() 	
 		data = response.css('p::text').extract()
 
 		try:
 			apply_linkss  = 'https://www.glassdoor.com' + apply_link[0]
-			r = requests.get(apply_linkss,headers=headers)
-			apply_links = r.url
+			res = Request(apply_linkss,headers = headers)
+			web = urlopen(res)
+			apply_links = web.url
 		except IndexError:
 			apply_links = response.css('button.applyButton span::text').extract()
 			apply_links = response.url
