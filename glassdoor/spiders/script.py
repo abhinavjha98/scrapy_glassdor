@@ -90,9 +90,9 @@ class DmozSpider(scrapy.Spider):
 
 		try:
 			apply_linkss  = 'https://www.glassdoor.com' + apply_link[0]
-			res = Request(apply_linkss,headers = headers)
-			web = urlopen(res)
-			apply_links = web.url
+			responses = requests.get(apply_linkss, headers=headers)
+
+			apply_links = responses.url
 		except IndexError:
 			apply_links = response.css('button.applyButton span::text').extract()
 			apply_links = response.url
